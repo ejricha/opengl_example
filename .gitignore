@@ -30,3 +30,9 @@
 *.exe
 *.out
 *.app
+
+# Top-level build directories
+/build_*
+
+# Tags for vim-youcompleteme
+compile_commands.json
