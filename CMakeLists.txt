@@ -9,7 +9,8 @@ cmake_minimum_required(VERSION 3.10)
 include(${CMAKE_SOURCE_DIR}/cmake/Common.cmake)
 
 # Set the project name
-project (OpenGL_Example)
+project(OpenGL_Example)
 
 # Build the following subdirs
 add_subdirectory(evaluator)
+add_subdirectory(image)
