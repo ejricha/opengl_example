@@ -11,25 +11,30 @@ int main(void)
 {
 	GLFWwindow* window;
 
-	/* Initialize the library */
+	// Initialize the library
 	if (!glfwInit())
-		return -1;
+	{
+		return EXIT_FAILURE;
+	}
 
-	/* Create a windowed mode window and its OpenGL context */
+	// Create a windowed mode window and its OpenGL context
 	window = glfwCreateWindow(640, 480, "Hello World", NULL, NULL);
 	if (!window)
 	{
 		glfwTerminate();
-		return -1;
+		return EXIT_FAILURE;
 	}
 
-	/* Make the window's context current */
+	// Make the window's context current
 	glfwMakeContextCurrent(window);
+	
+	// Show the OpenGL version
+	std::cout << "OpenGL version is " << glGetString(GL_VERSION) << std::endl;
 
-	/* Loop until the user closes the window */
+	// Loop until the user closes the window
 	while (!glfwWindowShouldClose(window))
 	{
-		/* Render here */
+		// Render here
 		glClear(GL_COLOR_BUFFER_BIT);
 
 		// Draw a triangle
@@ -39,10 +44,10 @@ int main(void)
 		glVertex2f(+0.5, -0.5);
 		glEnd();
 
-		/* Swap front and back buffers */
+		// Swap front and back buffers
 		glfwSwapBuffers(window);
 
-		/* Poll for and process events */
+		// Poll for and process events
 		glfwPollEvents();
 	}
 
