@@ -5,12 +5,31 @@
 
 #include <iostream>
 
+#include <GL/glew.h>
+#include <GL/glut.h>
 #include <GLFW/glfw3.h>
 
-int main(void)
+// Callback function for key press
+static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
-	GLFWwindow* window;
+	// Handle a few types of key presses
+	if (action == GLFW_PRESS)
+	{
+		switch (key)
+		{
+		case GLFW_KEY_ESCAPE:
+		case GLFW_KEY_Q:
+			glfwSetWindowShouldClose(window, GL_TRUE);
+			break;
+		default:
+			std::cout << "unknown key (" << key << ")\n";
+		}
+	}
+}
 
+// Main function
+int main(int argc, char** argv)
+{
 	// Initialize the library
 	if (!glfwInit())
 	{
@@ -18,7 +37,7 @@ int main(void)
 	}
 
 	// Create a windowed mode window and its OpenGL context
-	window = glfwCreateWindow(640, 480, "Hello World", NULL, NULL);
+	auto window = glfwCreateWindow(640, 480, "Window created using GLFW", NULL, NULL);
 	if (!window)
 	{
 		glfwTerminate();
@@ -27,11 +46,21 @@ int main(void)
 
 	// Make the window's context current
 	glfwMakeContextCurrent(window);
-	
+
 	// Show the OpenGL version
 	std::cout << "OpenGL version is " << glGetString(GL_VERSION) << std::endl;
 
-	// Loop until the user closes the window
+	// Set the function for key presses
+	glfwSetKeyCallback(window, key_callback);
+
+	// Test GLEW
+	if (glewInit() != GLEW_OK)
+	{
+		std::cout << "Error, GLEW is not OK!\n";
+		return EXIT_FAILURE;
+	}
+
+	// Loop until the user closes the window or presses escape
 	while (!glfwWindowShouldClose(window))
 	{
 		// Render here
@@ -52,5 +81,6 @@ int main(void)
 	}
 
 	glfwTerminate();
-	return 0;
+
+	return EXIT_SUCCESS;
 }
