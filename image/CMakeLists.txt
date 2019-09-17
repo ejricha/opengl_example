@@ -12,5 +12,4 @@ add_executable(ImageTest.bin ImageTest.cpp)
 #add_executable(ImageTest.bin ImageFromSource.cpp)
 
 # Be sure to link against OpenGL etc.
-#target_link_libraries(ImageTest.bin ${OPENGL_LIBRARIES} glfw GLEW ${GLUT_LIBRARY})
-target_link_libraries(ImageTest.bin ${CMAKE_DL_LIBS} ${OPENGL_LIBRARIES} glad glfw)
+target_link_libraries(ImageTest.bin ${OPENGL_LIBRARIES} glad glfw ${CMAKE_DL_LIBS})
