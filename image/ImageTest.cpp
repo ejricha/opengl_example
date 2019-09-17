@@ -8,6 +8,31 @@
 #include <glad/glad.h> // Must be included before glfw3
 #include <GLFW/glfw3.h>
 
+// Set some global variables
+namespace {
+	// Screen height and width
+	constexpr int ScreenWidth { 800 };
+	constexpr int ScreenHeight { 600 };
+
+	// Vertex and fragment shaders
+	const auto shaderSourceVertex { std::string(
+		"#version 330 core\n"
+		"layout (location = 0) in vec3 aPos;\n"
+		"void main()\n"
+		"{\n"
+		"   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
+		"}\0")
+	};
+	const auto shaderSourceFragment { std::string(
+		"#version 330 core\n"
+		"out vec4 FragColor;\n"
+		"void main()\n"
+		"{\n"
+		"   FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
+		"}\n\0")
+	};
+} // anonymous namespace
+
 // Callback function for key press
 static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
@@ -58,7 +83,7 @@ int main(int argc, char** argv)
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
 	// Create the window
-	GLFWwindow* window = glfwCreateWindow(800, 600, "LearnOpenGL", NULL, NULL);
+	GLFWwindow* window = glfwCreateWindow(ScreenWidth, ScreenHeight, "LearnOpenGL", NULL, NULL);
 	if (window == nullptr)
 	{
 	    std::cout << "Failed to create GLFW window\n";
@@ -76,9 +101,7 @@ int main(int argc, char** argv)
 	}
 
 	// Set the coordinates of the window
-	// Width: 800
-	// Height: 600
-	glViewport(0, 0, 800, 600);
+	glViewport(0, 0, ScreenWidth, ScreenHeight);
 
 	// Set some callback functions
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
