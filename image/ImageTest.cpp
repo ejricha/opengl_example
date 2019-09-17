@@ -5,8 +5,7 @@
 
 #include <iostream>
 
-#include <GL/glew.h>
-#include <GL/glut.h>
+#include <glad/glad.h> // Must be included before glfw3
 #include <GLFW/glfw3.h>
 
 // Callback function for key press
@@ -22,8 +21,24 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
 			glfwSetWindowShouldClose(window, GL_TRUE);
 			break;
 		default:
-			std::cout << "unknown key (" << key << ")\n";
+			std::cout << "unknown key (" << key << ")" << std::endl;
+			break;
 		}
+	}
+}
+
+// Callback function for window resize
+void framebuffer_size_callback(GLFWwindow* window, int width, int height)
+{
+	glViewport(0, 0, width, height);
+}
+
+// Process user input
+void processInput(GLFWwindow *window)
+{
+	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+	{
+		glfwSetWindowShouldClose(window, GL_TRUE);
 	}
 }
 
@@ -36,51 +51,62 @@ int main(int argc, char** argv)
 		return EXIT_FAILURE;
 	}
 
-	// Create a windowed mode window and its OpenGL context
-	auto window = glfwCreateWindow(640, 480, "Window created using GLFW", NULL, NULL);
-	if (!window)
+	// Initialize glfw and set some variables
+	glfwInit();
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
+	// Create the window
+	GLFWwindow* window = glfwCreateWindow(800, 600, "LearnOpenGL", NULL, NULL);
+	if (window == nullptr)
 	{
+	    std::cout << "Failed to create GLFW window\n";
+		glfwTerminate();
+		return EXIT_FAILURE;
+	}
+	glfwMakeContextCurrent(window);
+
+	// Make sure GLAD loads
+	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
+	{
+	    std::cout << "Failed to initialize GLAD\n";
 		glfwTerminate();
 		return EXIT_FAILURE;
 	}
 
-	// Make the window's context current
-	glfwMakeContextCurrent(window);
+	// Set the coordinates of the window
+	// Width: 800
+	// Height: 600
+	glViewport(0, 0, 800, 600);
 
-	// Show the OpenGL version
-	std::cout << "OpenGL version is " << glGetString(GL_VERSION) << std::endl;
-
-	// Set the function for key presses
+	// Set some callback functions
+	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 	glfwSetKeyCallback(window, key_callback);
-
-	// Test GLEW
-	if (glewInit() != GLEW_OK)
+	
+	// Start with no blue
+	auto colorBlue = 0.0f;
+	while(!glfwWindowShouldClose(window))
 	{
-		std::cout << "Error, GLEW is not OK!\n";
-		return EXIT_FAILURE;
-	}
-
-	// Loop until the user closes the window or presses escape
-	while (!glfwWindowShouldClose(window))
-	{
-		// Render here
+		// Handle keypresses
+		processInput(window);
+		
+		// Set the clear color, with cycling blue
+		glClearColor(0.2f, 0.3f, colorBlue, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 
-		// Draw a triangle
-		glBegin(GL_TRIANGLES);
-		glVertex2f(-0.5, -0.5);
-		glVertex2f( 0.0, +0.5);
-		glVertex2f(+0.5, -0.5);
-		glEnd();
-
-		// Swap front and back buffers
+		// Swap the buffer in, and poll for events
 		glfwSwapBuffers(window);
-
-		// Poll for and process events
 		glfwPollEvents();
+
+		// Increment blue
+		colorBlue += 0.01f;
+		if (colorBlue > 1.0f)
+		{
+			colorBlue = 0.0f;
+		}
 	}
 
 	glfwTerminate();
-
 	return EXIT_SUCCESS;
 }
