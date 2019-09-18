@@ -46,7 +46,6 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
 			glfwSetWindowShouldClose(window, GL_TRUE);
 			break;
 		default:
-			std::cout << "unknown key (" << key << ")" << std::endl;
 			break;
 		}
 	}
@@ -96,6 +95,10 @@ int main(int argc, char** argv)
 	}
 	glfwMakeContextCurrent(window);
 
+	// Set some callback functions
+	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+	glfwSetKeyCallback(window, key_callback);
+
 	// Make sure GLAD loads
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
 	{
@@ -103,27 +106,6 @@ int main(int argc, char** argv)
 		glfwTerminate();
 		return EXIT_FAILURE;
 	}
-
-	// Set the coordinates of the window
-	glViewport(0, 0, ScreenWidth, ScreenHeight);
-
-	// Set some callback functions
-	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
-	glfwSetKeyCallback(window, key_callback);
-
-	// Calculate this triangle
-	float vertices[] = {
-		-0.5f, -0.5f, 0.0f,
-		0.5f, -0.5f, 0.0f,
-		0.0f,  0.5f, 0.0f
-	};
-
-	// Create the Vertex Buffer Object
-	unsigned int VBO;
-	glGenBuffers(1, &VBO);
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	//glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_DYNAMIC_DRAW);
 
 	// Use the vertex shader
 	unsigned int vertexShader { glCreateShader(GL_VERTEX_SHADER) };
@@ -141,6 +123,13 @@ int main(int argc, char** argv)
 	unsigned int fragmentShader { glCreateShader(GL_FRAGMENT_SHADER) };
 	glShaderSource(fragmentShader, 1, &shaderSourceFragment, nullptr);
 	glCompileShader(fragmentShader);
+	glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
+    if (!success)
+    {
+		glGetShaderInfoLog(fragmentShader, 512, nullptr, info);
+		std::cout << "Failed to initialize fragment shader: " << info << "\n";
+		return EXIT_FAILURE;
+    }
 
 	// Actually create the shader program
 	unsigned int shaderProgram { glCreateProgram() };
@@ -155,8 +144,54 @@ int main(int argc, char** argv)
 		return EXIT_FAILURE;
 	}
 
+	// Delete the shaders that we no longer need
+	glDeleteShader(vertexShader);
+	glDeleteShader(fragmentShader);
+
+	// Set the coordinates of the window
+	glViewport(0, 0, ScreenWidth, ScreenHeight);
+
+	// Calculate this triangle
+	float vertices[] {
+		-0.8f, -0.8f, 0.0f,
+		-0.8f, -0.6f, 0.0f,
+		-0.6f, -0.6f, 0.0f,
+		-0.6f, -0.4f, 0.0f,
+		-0.4f, -0.4f, 0.0f,
+		-0.4f, -0.2f, 0.0f,
+		-0.2f, -0.2f, 0.0f,
+		-0.2f, -0.0f, 0.0f,
+		+0.0f, +0.0f, 0.0f,
+		+0.0f, +0.2f, 0.0f,
+		+0.2f, +0.2f, 0.0f
+	};
+	const int NumVertices { 4 };
+	unsigned int indices[] { 0, 1, 2, 1, 2, 3, 2, 3, 4, 3, 4, 5, 4, 5, 6, 5, 6, 7, 6, 7, 8, 7, 8, 9, 8, 9, 10 };
+	const auto NumIndices { (NumVertices - 1) * 3 };
+
+	// Generate some buffers
+	unsigned int VBO, VAO, EBO;
+	glGenVertexArrays(1, &VAO);
+	glGenBuffers(1, &VBO);
+	glGenBuffers(1, &EBO);
+	glBindVertexArray(VAO);
+	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+	glVertexAttribPointer(0, NumVertices, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(0);
+	
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindVertexArray(0);
+
+	// Draw in wireframe mode
+	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	//glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
 	// Start with no blue
 	auto colorBlue = 0.0f;
+	double delta = 0.01;
 	while(!glfwWindowShouldClose(window))
 	{
 		// Handle keypresses
@@ -166,17 +201,28 @@ int main(int argc, char** argv)
 		glClearColor(0.2f, 0.3f, colorBlue, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 
+		// Use the specified shader program
+		glUseProgram(shaderProgram);
+		glBindVertexArray(VAO);
+		glDrawElements(GL_TRIANGLES, NumIndices, GL_UNSIGNED_INT, 0);
+
 		// Swap the buffer in, and poll for events
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 
 		// Increment blue
-		colorBlue += 0.01f;
-		if (colorBlue > 1.0f)
+		colorBlue += delta;
+		if ((colorBlue >= 1.0f) || (colorBlue <= 0.0f))
 		{
-			colorBlue = 0.0f;
+			delta = -delta;
+			colorBlue += delta;
 		}
 	}
+
+	// Clean up buffers
+	glDeleteVertexArrays(1, &VAO);
+	glDeleteBuffers(1, &VBO);
+	glDeleteBuffers(1, &EBO);
 
 	glfwTerminate();
 	return EXIT_SUCCESS;
