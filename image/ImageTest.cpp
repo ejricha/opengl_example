@@ -106,14 +106,34 @@ int main(int argc, char** argv)
 	// Set some callback functions
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 	glfwSetKeyCallback(window, key_callback);
-	
+
+	// Calculate this triangle
+	float vertices[] = {
+		-0.5f, -0.5f, 0.0f,
+		0.5f, -0.5f, 0.0f,
+		0.0f,  0.5f, 0.0f
+	};
+
+	// Create the Vertex Buffer Object
+	unsigned int VBO;
+	glGenBuffers(1, &VBO);
+	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+	//glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_DYNAMIC_DRAW);
+
+	// Use the vertex shader
+	unsigned int vertexShader { glCreateShader(GL_VERTEX_SHADER) };
+	const auto s = shaderSourceVertex.c_str();
+	glShaderSource(vertexShader, 1, &s, nullptr);
+	glCompileShader(vertexShader);
+
 	// Start with no blue
 	auto colorBlue = 0.0f;
 	while(!glfwWindowShouldClose(window))
 	{
 		// Handle keypresses
 		processInput(window);
-		
+
 		// Set the clear color, with cycling blue
 		glClearColor(0.2f, 0.3f, colorBlue, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
