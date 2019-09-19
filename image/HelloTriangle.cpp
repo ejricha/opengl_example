@@ -1,7 +1,7 @@
-// ImageTest.cpp
+// HelloTriangle.cpp
 //
-// Simple image test, tutorial 1 from
-// http://www.opengl-tutorial.org/beginners-tutorials/tutorial-1-opening-a-window/
+// Simple test of drawing a triangle
+// https://learnopengl.com/Getting-started/Hello-Triangle
 
 #include <iostream>
 
