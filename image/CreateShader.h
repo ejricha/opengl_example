@@ -6,12 +6,13 @@
 #ifndef SHADER_H
 #define SHADER_H
 
-#include <glad/glad.h>
-
-#include <string>
+#include <filesystem>
 #include <fstream>
-#include <sstream>
 #include <iostream>
+#include <sstream>
+#include <string_view>
+
+#include <glad/glad.h>
 
 class Shader
 {
@@ -19,23 +20,24 @@ public:
 	unsigned int ID;
 	// constructor generates the shader on the fly
 	// ------------------------------------------------------------------------
-	Shader(const char* vertexPath, const char* fragmentPath)
+	//Shader(std::string_view vertexFile, std::string_view fragmentFile)
+	Shader(const char* vertexFile, const char* fragmentFile)
 	{
+		const std::string SearchDir { "/home/eric/software/github/ejricha/opengl_example/image" };
+		std::cout << "Looking for shaders in (" << SearchDir << ")\n";
+
 		// 1. retrieve the vertex/fragment source code from filePath
 		std::string vertexCode;
 		std::string fragmentCode;
-		std::ifstream vShaderFile;
-		std::ifstream fShaderFile;
-		// ensure ifstream objects can throw exceptions:
-		vShaderFile.exceptions (std::ifstream::failbit | std::ifstream::badbit);
-		fShaderFile.exceptions (std::ifstream::failbit | std::ifstream::badbit);
 		try
 		{
-			// open files
-			vShaderFile.open(vertexPath);
-			fShaderFile.open(fragmentPath);
-			std::stringstream vShaderStream, fShaderStream;
+			// create the full file paths
+			const auto vertexPath { std::filesystem::path(SearchDir) / vertexFile };
+			const auto fragmentPath { std::filesystem::path(SearchDir) / fragmentFile };
+			std::ifstream vShaderFile(vertexPath);
+			std::ifstream fShaderFile(fragmentPath);
 			// read file's buffer contents into streams
+			std::stringstream vShaderStream, fShaderStream;
 			vShaderStream << vShaderFile.rdbuf();
 			fShaderStream << fShaderFile.rdbuf();
 			// close file handlers
@@ -47,7 +49,7 @@ public:
 		}
 		catch (std::ifstream::failure e)
 		{
-			std::cout << "ERROR::SHADER::FILE_NOT_SUCCESFULLY_READ" << std::endl;
+			std::cout << "ERROR::SHADER::FILE_NOT_SUCCESFULLY_READ: " << e.what() << "\n";
 		}
 		const char* vShaderCode = vertexCode.c_str();
 		const char * fShaderCode = fragmentCode.c_str();
@@ -109,7 +111,8 @@ private:
 			if (!success)
 			{
 				glGetShaderInfoLog(shader, 1024, NULL, infoLog);
-				std::cout << "ERROR::SHADER_COMPILATION_ERROR of type: " << type << "\n" << infoLog << "\n -- --------------------------------------------------- -- " << std::endl;
+				std::cout << "ERROR::SHADER_COMPILATION_ERROR of type: " << type << "\n"
+					<< infoLog << "\n -- --------------------------------------------------- --\n";
 			}
 		}
 		else
@@ -118,7 +121,8 @@ private:
 			if (!success)
 			{
 				glGetProgramInfoLog(shader, 1024, NULL, infoLog);
-				std::cout << "ERROR::PROGRAM_LINKING_ERROR of type: " << type << "\n" << infoLog << "\n -- --------------------------------------------------- -- " << std::endl;
+				std::cout << "ERROR::PROGRAM_LINKING_ERROR of type: " << type << "\n"
+					<< infoLog << "\n -- --------------------------------------------------- --\n";
 			}
 		}
 	}

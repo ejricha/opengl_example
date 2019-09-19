@@ -5,8 +5,10 @@
 # Produce YCM tags
 include(${CMAKE_SOURCE_DIR}/cmake/YCM.cmake)
 
-# We need at least C++11 to run
-set(CMAKE_CXX_STANDARD 11)	
+# We need at least C++17 to run
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
 # Use colorful output by default
 option(COLOR_OUTPUT "Always produce ANSI-colored output (GNU/Clang only)." TRUE)
