@@ -4,6 +4,7 @@
 // https://learnopengl.com/Getting-started/Shaders
 
 #include <iostream>
+#include <cmath>
 
 #include <glad/glad.h> // Must be included before glfw3
 #include <GLFW/glfw3.h>
@@ -88,6 +89,10 @@ int main()
 
 	// Flush the output
 	std::cout << std::endl;
+	
+	// Draw in wireframe mode
+	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
 	// You can unbind the VAO afterwards so other VAO calls won't accidentally modify this VAO, but this rarely happens. Modifying other
 	// VAOs requires a call to glBindVertexArray anyways so we generally don't unbind VAOs (nor VBOs) when it's not directly necessary.
@@ -103,9 +108,15 @@ int main()
 		// Set the clear color, with cycling blue
 		glClearColor(0.5f, 0.1f, colorBlue, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
+		
+		// Use our shader
+		ourShader.use();
+
+		// Update the amount of green in every vertex
+		const auto greenValue = std::sin(glfwGetTime()) / 4.0f + 0.4f;
+		ourShader.setFloat("sinGreen", greenValue);
 
 		// render the triangle
-		ourShader.use();
 		glBindVertexArray(VAO);
 		glDrawArrays(GL_TRIANGLES, 0, 3);
 
