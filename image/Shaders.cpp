@@ -112,9 +112,18 @@ int main()
 		// Use our shader
 		ourShader.use();
 
+		// Get the current time
+		const auto timeValue = glfwGetTime();
+
 		// Update the amount of green in every vertex
-		const auto greenValue = std::sin(glfwGetTime()) / 4.0f + 0.4f;
-		ourShader.setFloat("sinGreen", greenValue);
+		const auto greenValue = std::sin(timeValue) / 4.0 + 0.4f;
+		ourShader.setFloat("uniformGreen", greenValue);
+
+		// Move the triangle in a circle
+		const auto offsetValueX = std::sin(timeValue) / 2.0;
+		const auto offsetValueY = std::cos(timeValue) / 2.0;
+		ourShader.setFloat("uniformOffsetX", offsetValueX);
+		ourShader.setFloat("uniformOffsetY", offsetValueY);
 
 		// render the triangle
 		glBindVertexArray(VAO);
