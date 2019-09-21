@@ -11,6 +11,9 @@
 
 #include "CreateShader.h"
 
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
+
 // Set some global variables
 namespace {
 	// Screen height and width
@@ -54,17 +57,63 @@ int main()
 	}
 
 	// Build and compile our shader programs
-	Shader ourShader("vs/positions_and_colors.c", "fs/simple.c");
+	Shader ourShader("vs/texture.c", "fs/texture.c");
 
-	// Configure vertex attributes
-	float vertices[]
-	{
-		// positions		 // colors
-		 0.5f, -0.5f, 0.0f,  1.0f, 0.0f, 0.0f,  // bottom right
-		-0.5f, -0.5f, 0.0f,  0.0f, 1.0f, 0.0f,  // bottom left
-		 0.0f,  0.5f, 0.0f,  0.0f, 0.0f, 1.0f   // top
+	// Texture coordiates
+	float vertices[] = {
+		// positions      // colors         // texture coords
+		0.5f, 0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, // top right
+		0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, // bottom right
+		-0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, // bottom left
+		-0.5f, 0.5f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f // top left
 	};
 
+
+	// Choose how to wrap textures
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
+	//glTexParameteri(GL_TEXTURE_2D, GL_CLAMP_TO_EDGE);
+	//float borderColor[] = { 1.0f, 0.0f, 1.0f, 1.0f };
+	//glTexParameterv(GL_TEXTURE_2D, GL_CLAMP_TO_BORDER, borderColor);
+
+	// Choose how to filter textures
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	// GL_(NEAREST|LINEAR)_MIPMAP_(NEAREST|LINEAR)
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	unsigned int texture1;
+	glGenTextures(1, &texture1);
+	glBindTexture(GL_TEXTURE_2D, texture1);
+	
+	// Load the image of a wooden container
+	int width, height, nrChannels;
+	const auto imagePath { "/home/eric/software/github/ejricha/opengl_example/image/container.jpg" };
+	unsigned char *data = stbi_load(imagePath, &width, &height, &nrChannels, 0);
+	if (data == nullptr)
+	{
+		std::cout << "Failed to load texture (" << imagePath << ")" << std::endl;
+		glfwTerminate();
+		return EXIT_FAILURE;
+	}
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+	glGenerateMipmap(GL_TEXTURE_2D);
+	stbi_image_free(data);
+
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+	glEnableVertexAttribArray(2);
+
+	// Show the number of vertex attributes supported
+	int NumVertexAttributesSupported;
+	glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &NumVertexAttributesSupported);
+	std::cout << "Number of vertex attributes supported = " << NumVertexAttributesSupported << std::endl;
+
+	// Draw in wireframe mode
+	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	
 	unsigned int VBO, VAO;
 	glGenVertexArrays(1, &VAO);
 	glGenBuffers(1, &VBO);
@@ -72,80 +121,46 @@ int main()
 	// bind the Vertex Array Object first, then bind and set vertex buffer(s), and then configure vertex attributes(s).
 	glBindVertexArray(VAO);
 
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-	// Position attribute
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
-	glEnableVertexAttribArray(0);
-	// Color attribute
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
-	glEnableVertexAttribArray(1);
-
-	// Show how many vertex attributes are supported
-	int NumVertexAttributesSupported;
-	glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &NumVertexAttributesSupported);
-	std::cout << "Number of vertex attributes supported = " << NumVertexAttributesSupported << "\n";
-
-	// Flush the output
-	std::cout << std::endl;
-	
-	// Draw in wireframe mode
-	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-
-	// You can unbind the VAO afterwards so other VAO calls won't accidentally modify this VAO, but this rarely happens. Modifying other
-	// VAOs requires a call to glBindVertexArray anyways so we generally don't unbind VAOs (nor VBOs) when it's not directly necessary.
-	// glBindVertexArray(0);
-
-	// Start with no blue
-	auto colorBlue = 0.0f;
-	double delta = 0.01;
+	// Use our shader
+	ourShader.use();
+	glUniform1i(glGetUniformLocation(ourShader.ID, "texture1"), 0); // set it manually
+	ourShader.setInt("texture1", 1); // or with shader class
 
 	// Render loop
 	while (!glfwWindowShouldClose(window))
 	{
-		// Set the clear color, with cycling blue
-		glClearColor(0.5f, 0.1f, colorBlue, 1.0f);
+		// Set the background color to dark red
+		glClearColor(0.3f, 0.1f, 0.1f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
-		
-		// Use our shader
-		ourShader.use();
+
 
 		// Get the current time
 		const auto timeValue = glfwGetTime();
-
-		// Update the amount of green in every vertex
-		const auto greenValue = std::sin(timeValue) / 4.0 + 0.4f;
-		ourShader.setFloat("uniformGreen", greenValue);
-
-		// Move the triangle in a circle
+		
+		// Move the texture in a circle
 		const auto offsetValueX = std::sin(timeValue) / 2.0;
 		const auto offsetValueY = std::cos(timeValue) / 2.0;
 		ourShader.setFloat("uniformOffsetX", offsetValueX);
 		ourShader.setFloat("uniformOffsetY", offsetValueY);
 
-		// render the triangle
+		// Show the texture
+		glActiveTexture(GL_TEXTURE0); // activate the texture unit first before binding texture
+		//glBindTexture(GL_TEXTURE_2D, texture);
+		//glBindVertexArray(VAO);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, texture1);
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, texture1);
 		glBindVertexArray(VAO);
-		glDrawArrays(GL_TRIANGLES, 0, 3);
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
 		// glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
-		// -------------------------------------------------------------------------------
 		glfwSwapBuffers(window);
 		glfwPollEvents();
-
-		// Increment blue
-		colorBlue += delta;
-		if ((colorBlue >= 1.0f) || (colorBlue <= 0.0f))
-		{
-			delta = -delta;
-			colorBlue += delta;
-		}
 	}
 
 	// Clean up buffers
 	glDeleteVertexArrays(1, &VAO);
-	glDeleteBuffers(1, &VBO);
 
 	glfwTerminate();
 	return EXIT_SUCCESS;

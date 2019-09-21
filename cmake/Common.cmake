@@ -5,6 +5,9 @@
 # Produce YCM tags
 include(${CMAKE_SOURCE_DIR}/cmake/YCM.cmake)
 
+# Add top-level include directory
+include_directories(AFTER ${CMAKE_SOURCE_DIR}/include)
+
 # We need at least C++17 to run
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
