@@ -81,11 +81,9 @@ int main()
 	glGenVertexArrays(1, &VAO);
 	glGenBuffers(1, &VBO);
 	glGenBuffers(1, &EBO);
-	std::cout << "Number of vertex attributes supported = " << NumVertexAttributesSupported << std::endl;
 
 	// bind the Vertex Array Object first, then bind and set vertex buffer(s), and then configure vertex attributes(s).
 	glBindVertexArray(VAO);
-	std::cout << "Number of vertex attributes supported = " << NumVertexAttributesSupported << std::endl;
 
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
@@ -151,7 +149,7 @@ int main()
 
 	// Use our shader
 	ourShader.use();
-	glUniform1i(glGetUniformLocation(ourShader.ID, "texture1"), 0); // set it manually
+	//glUniform1i(glGetUniformLocation(ourShader.ID, "texture1"), 0); // set it manually
 	ourShader.setInt("texture2", 1); // or with shader class
 
 	// Draw in wireframe mode
@@ -167,6 +165,10 @@ int main()
 
 		// Get the current time
 		const auto timeValue = glfwGetTime();
+		
+		// Update the amount of green in every vertex
+		const auto greenValue = std::sin(timeValue) / 4.0 + 0.4f;
+		ourShader.setFloat("uniformGreen", greenValue);
 
 		// Move the texture in a circle
 		const auto offsetValueX = std::sin(timeValue) / 2.0;
