@@ -24,8 +24,8 @@ public:
 	//Shader(std::string_view vertexFile, std::string_view fragmentFile)
 	Shader(const char* vertexFile, const char* fragmentFile)
 	{
-		const std::string SearchDir { "/home/eric/software/github/ejricha/opengl_example/image" };
-		std::cout << "Looking for shaders in (" << SearchDir << ")\n";
+		const auto ShaderPath = std::filesystem::path(SHADER_DIR);
+		std::cout << "Looking for shaders in (" << ShaderPath << ")\n";
 
 		// 1. retrieve the vertex/fragment source code from filePath
 		std::string vertexCode;
@@ -33,8 +33,8 @@ public:
 		try
 		{
 			// create the full file paths
-			const auto vertexPath { std::filesystem::path(SearchDir) / vertexFile };
-			const auto fragmentPath { std::filesystem::path(SearchDir) / fragmentFile };
+			const auto vertexPath { ShaderPath / vertexFile };
+			const auto fragmentPath { ShaderPath / fragmentFile };
 			std::ifstream vShaderFile(vertexPath);
 			std::ifstream fShaderFile(fragmentPath);
 			// read file's buffer contents into streams
