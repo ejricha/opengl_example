@@ -31,6 +31,11 @@ public:
 		return (paused ? 0 : _val);
 	}
 
+	// Directly set the value
+	void Set(const Parameter_t val) {
+		_val = val;
+	}
+
 	// Increment, but clip to min/max
 	void Increment(const Parameter_t delta) {
 		if (_val + delta > ParameterMax)
@@ -91,8 +96,28 @@ public:
 	inline Request_t GetZ() const {
 		return pos.z;
 	}
+	inline Request_t GetVelocityX() const {
+		return vel.x.Get();
+	}
+	inline Request_t GetVelocityY() const {
+		return vel.y.Get();
+	}
+	inline Request_t GetVelocityZ() const {
+		return vel.z.Get();
+	}
 
 	// Setters
+	inline void SetVelocityX(const Request_t val) {
+		vel.x.Set(val);
+	}
+	inline void SetVelocityY(const Request_t val) {
+		vel.y.Set(val);
+	}
+	inline void SetVelocityZ(const Request_t val) {
+		vel.z.Set(val);
+	}
+
+	// Incrementers
 	inline void IncrementVelocityX(const Request_t delta) {
 		vel.x.Increment(delta);
 	}
@@ -103,6 +128,18 @@ public:
 		vel.z.Increment(delta);
 	}
 
+	// Pause all movement
+	void Pause(bool p) {
+		paused = p;
+		// Only pause the z-dimension for now
+		//vel.x.Pause(paused);
+		//vel.y.Pause(paused);
+		vel.z.Pause(paused);
+	}
+	bool PlayPause() {
+		Pause(!paused);
+	}
+
 	// Print the values
 	void Print() {
 		std::cout << "Position:" << pos << " ; Velocity:" << vel << "\n";
@@ -111,4 +148,5 @@ private:
 	// Member variables
 	Position pos; // position
 	Request vel; // velocity
+	bool paused;
 };

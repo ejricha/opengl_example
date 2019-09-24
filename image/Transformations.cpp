@@ -3,8 +3,8 @@
 // Test applying transformations to textures
 // https://learnopengl.com/Getting-started/Transformations
 
-#include <iostream>
 #include <cmath>
+#include <iostream>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -18,6 +18,9 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
+// Movement
+#include "Movement.h"
+
 // Set some global variables
 namespace {
 	// Screen height and width
@@ -28,6 +31,9 @@ namespace {
 // Callback function definitions
 static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 static void framebuffer_size_callback(GLFWwindow* window, int width, int height);
+
+// Global Movement object
+Movement movement;
 
 // Main function
 int main()
@@ -169,6 +175,11 @@ int main()
 	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	//glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
+	// Initial rotation is 50%
+	movement.SetVelocityZ(20);
+
+	double angle { 0.0 };
+
 	// Render loop
 	while (!glfwWindowShouldClose(window))
 	{
@@ -176,17 +187,13 @@ int main()
 		glClearColor(0.3f, 0.1f, 0.1f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 
-		// Get the current time
-		const auto timeValue = glfwGetTime();
-
-		// Update the amount of green in every vertex
-		const auto greenValue = std::sin(timeValue) / 4.0 + 0.4f;
-		ourShader.setFloat("uniformGreen", greenValue);
-
 		// Rotate and scale the texture
 		glm::mat4 transform = glm::mat4(1.0f);
-		transform = glm::translate(transform, glm::vec3(0.5f, -0.5f, 0.0f));
-		transform = glm::rotate(transform, (float)glfwGetTime(), glm::vec3(0.0f, 0.0f, 1.0f));
+		transform = glm::translate(transform, glm::vec3(movement.GetVelocityX() / 100.0f, movement.GetVelocityY() / 100.0f, 0.0f));
+		transform = glm::rotate(transform, static_cast<float>(angle), glm::vec3(1.0f, 0.2f, 0.4f));
+
+		// Apply the change in angle
+		angle -= movement.GetVelocityZ() / (6000.0f / (2 * M_PI));
 
 		// Show both textures
 		glActiveTexture(GL_TEXTURE0);
@@ -218,18 +225,65 @@ int main()
 // Callback function for key press
 static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
-	// Handle a few types of key presses
+	// Trigger on key down
 	if (action == GLFW_PRESS)
 	{
+		// Handle modifier keys
+		int multiplier = 4;
+		if (mods > 0) {
+			if ((mods & GLFW_MOD_SHIFT) > 0) {
+				multiplier /= 4;
+			}
+			if ((mods & GLFW_MOD_CONTROL) > 0) {
+				multiplier *= 5;
+			}
+		}
+
+		// Handle the actual keypress
 		switch (key)
 		{
+		// Quit
 		case GLFW_KEY_ESCAPE:
 		case GLFW_KEY_Q:
 			glfwSetWindowShouldClose(window, GL_TRUE);
 			break;
+		// Move in x direction
+		case GLFW_KEY_RIGHT:
+		case GLFW_KEY_L:
+			movement.IncrementVelocityX(multiplier);
+			break;
+		case GLFW_KEY_LEFT:
+		case GLFW_KEY_H:
+			movement.IncrementVelocityX(-multiplier);
+			break;
+		// Move in y direction
+		case GLFW_KEY_UP:
+		case GLFW_KEY_K:
+			movement.IncrementVelocityY(multiplier);
+			break;
+		case GLFW_KEY_DOWN:
+		case GLFW_KEY_J:
+			movement.IncrementVelocityY(-multiplier);
+			break;
+		// Move in z direction
+		case GLFW_KEY_RIGHT_BRACKET:
+			movement.IncrementVelocityZ(multiplier);
+			break;
+		case GLFW_KEY_LEFT_BRACKET:
+			movement.IncrementVelocityZ(-multiplier);
+			break;
+		// Pause all movement
+		case GLFW_KEY_SPACE:
+			movement.PlayPause();
+			break;
+		// Unhandled key
 		default:
+			std::cout << "key was " << key << " * " << multiplier << "\n";
 			break;
 		}
+
+		// Print movement
+		movement.Print();
 	}
 }
 

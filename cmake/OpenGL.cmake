@@ -18,4 +18,7 @@ macro(add_executable_cpp NAME)
 	
 	# Be sure to link against OpenGL etc.
 	target_link_libraries(${BIN} ${OPENGL_LIBRARIES} glad glfw ${CMAKE_DL_LIBS})
+
+	# Also use the standard compiler flags
+	target_compile_options(${BIN} PRIVATE ${CUSTOM_WARNING_LEVEL})
 endmacro()

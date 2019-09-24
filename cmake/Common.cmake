@@ -13,6 +13,10 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+# Treat warnings as errors
+#set(CUSTOM_WARNING_LEVEL -Wall -Wextra -pedantic -Werror)
+set(CUSTOM_WARNING_LEVEL -Wall -Wextra -pedantic)
+
 # Use colorful output by default
 option(COLOR_OUTPUT "Always produce ANSI-colored output (GNU/Clang only)." TRUE)
 if(${COLOR_OUTPUT})
