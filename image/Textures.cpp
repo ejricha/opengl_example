@@ -115,7 +115,8 @@ int main()
 	// load image, create texture and generate mipmaps
 	int width, height, nrChannels;
 	stbi_set_flip_vertically_on_load(true); // tell stb_image.h to flip loaded texture's on the y-axis.
-	unsigned char* data = stbi_load("/home/eric/software/github/ejricha/opengl_example/image/container.jpg", &width, &height, &nrChannels, 0);
+	const auto Texture1Path = std::filesystem::path(TEXTURE_DIR) / "container.jpg";
+	unsigned char* data = stbi_load(Texture1Path.c_str(), &width, &height, &nrChannels, 0);
 	if (!data)
 	{
 		std::cout << "Failed to load texture\n";
@@ -136,7 +137,8 @@ int main()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	// load image, create texture and generate mipmaps
-	data = stbi_load("/home/eric/software/github/ejricha/opengl_example/image/awesomeface.png", &width, &height, &nrChannels, 0);
+	const auto Texture2Path = std::filesystem::path(TEXTURE_DIR) / "awesomeface.png";
+	data = stbi_load(Texture2Path.c_str(), &width, &height, &nrChannels, 0);
 	if (!data)
 	{
 		std::cout << "Failed to load texture\n";
