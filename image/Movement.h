@@ -118,6 +118,15 @@ public:
 	}
 
 	// Incrementers
+	inline void IncrementX(const Request_t delta) {
+		pos.x += delta;
+	}
+	inline void IncrementY(const Request_t delta) {
+		pos.y += delta;
+	}
+	inline void IncrementZ(const Request_t delta) {
+		pos.z += delta;
+	}
 	inline void IncrementVelocityX(const Request_t delta) {
 		vel.x.Increment(delta);
 	}
@@ -131,12 +140,11 @@ public:
 	// Pause all movement
 	void Pause(bool p) {
 		paused = p;
-		// Only pause the z-dimension for now
-		//vel.x.Pause(paused);
-		//vel.y.Pause(paused);
+		vel.x.Pause(paused);
+		vel.y.Pause(paused);
 		vel.z.Pause(paused);
 	}
-	bool PlayPause() {
+	void PlayPause() {
 		Pause(!paused);
 	}
 
