@@ -181,6 +181,9 @@ int main()
 	//auto view = glm::translate(identity, glm::vec3(0.0f, 0.0f, -3.0f));
 	const auto projection = glm::perspective(glm::radians(45.0f), static_cast<float>(ScreenWidth / ScreenHeight), 0.1f, 100.0f);
 
+	// Initialize the Z-offset to -3
+	movement.SetZ(-3.0f);
+
 	// Render loop
 	while (!glfwWindowShouldClose(window)) {
 		// Set the background color to dark red
@@ -188,8 +191,7 @@ int main()
 		glClear(GL_COLOR_BUFFER_BIT);
 
 		// Update the view every frame
-		//auto view = glm::translate(identity, glm::vec3(movement.GetX(), movement.GetY(), movement.GetZ()));
-		auto view = glm::translate(identity, glm::vec3(movement.GetX() / 1000.0f, movement.GetY() / 1000.0f, -3.0f + movement.GetZ() / 1000.0f));
+		auto view = glm::translate(identity, glm::vec3(movement.GetX(), movement.GetY(), movement.GetZ()));
 
 		// Update the model, view, and projection
 		int modelLoc = glGetUniformLocation(ourShader.ID, "model");
@@ -227,8 +229,11 @@ int main()
 // Callback function for key press
 static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
-	// Trigger on key down
-	if (action == GLFW_PRESS)
+	// Trigger on key down or repeat
+	switch (action)
+	{
+	case GLFW_PRESS:
+	case GLFW_REPEAT:
 	{
 		// Handle modifier keys
 		int multiplier = 4;
@@ -252,32 +257,32 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
 		// Move left and right
 		case GLFW_KEY_RIGHT:
 		case GLFW_KEY_L:
-			movement.IncrementX(multiplier);
+			movement.IncrementX(static_cast<float>(multiplier) / 100.0f);
 			//movement.IncrementVelocityX(multiplier);
 			break;
 		case GLFW_KEY_LEFT:
 		case GLFW_KEY_H:
-			movement.IncrementX(-multiplier);
+			movement.IncrementX(static_cast<float>(-multiplier) / 100.0f);
 			//movement.IncrementVelocityX(-multiplier);
 			break;
 		// Move forward and back
 		case GLFW_KEY_UP:
 		case GLFW_KEY_K:
-			movement.IncrementZ(-multiplier);
+			movement.IncrementZ(static_cast<float>(-multiplier) / 100.0f);
 			//movement.IncrementVelocityY(multiplier);
 			break;
 		case GLFW_KEY_DOWN:
 		case GLFW_KEY_J:
-			movement.IncrementZ(multiplier);
+			movement.IncrementZ(static_cast<float>(multiplier) / 100.0f);
 			//movement.IncrementVelocityY(-multiplier);
 			break;
 		// Move up and down
 		case GLFW_KEY_RIGHT_BRACKET:
-			movement.IncrementY(multiplier);
+			movement.IncrementY(static_cast<float>(multiplier) / 100.0f);
 			//movement.IncrementVelocityZ(multiplier);
 			break;
 		case GLFW_KEY_LEFT_BRACKET:
-			movement.IncrementY(-multiplier);
+			movement.IncrementY(static_cast<float>(-multiplier) / 100.0f);
 			//movement.IncrementVelocityZ(-multiplier);
 			break;
 		// Pause all movement
@@ -292,6 +297,10 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
 
 		// Print movement
 		movement.Print();
+	}
+		break;
+	default:
+		break;
 	}
 }
 

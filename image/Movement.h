@@ -87,13 +87,13 @@ public:
 	}
 
 	// Getters
-	inline Request_t GetX() const {
+	inline Position_t GetX() const {
 		return pos.x;
 	}
-	inline Request_t GetY() const {
+	inline Position_t GetY() const {
 		return pos.y;
 	}
-	inline Request_t GetZ() const {
+	inline Position_t GetZ() const {
 		return pos.z;
 	}
 	inline Request_t GetVelocityX() const {
@@ -107,6 +107,15 @@ public:
 	}
 
 	// Setters
+	inline void SetX(const Position_t val) {
+		pos.x = val;
+	}
+	inline void SetY(const Position_t val) {
+		pos.y = val;
+	}
+	inline void SetZ(const Position_t val) {
+		pos.z = val;
+	}
 	inline void SetVelocityX(const Request_t val) {
 		vel.x.Set(val);
 	}
@@ -118,13 +127,13 @@ public:
 	}
 
 	// Incrementers
-	inline void IncrementX(const Request_t delta) {
+	inline void IncrementX(const Position_t delta) {
 		pos.x += delta;
 	}
-	inline void IncrementY(const Request_t delta) {
+	inline void IncrementY(const Position_t delta) {
 		pos.y += delta;
 	}
-	inline void IncrementZ(const Request_t delta) {
+	inline void IncrementZ(const Position_t delta) {
 		pos.z += delta;
 	}
 	inline void IncrementVelocityX(const Request_t delta) {
